@@ -1,33 +1,37 @@
 "use client";
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 
 const Contact = () => {
   const [result, setResult] = useState("");
 
-  const onSubmit = async (event: any) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setResult("Sending....");
-    const formData = new FormData(event.target);
+    setResult("Sending...");
 
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     formData.append("access_key", "70483396-f447-44e8-b11d-e24cc86550c3");
 
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.success) {
-      setResult("Form Submitted Successfully");
-      setTimeout(() => {
-        setResult("");
-      }, 5000);
-      event.target.reset();
-    } else {
-      console.log("Error", data);
-      setResult(data.message);
+      if (data.success) {
+        setResult("Form Submitted Successfully");
+        setTimeout(() => setResult(""), 5000);
+        form.reset();
+      } else {
+        console.error("Error:", data);
+        setResult(data.message);
+      }
+    } catch (error) {
+      console.error("Submission Error:", error);
+      setResult("Submission failed. Please try again.");
     }
   };
 
